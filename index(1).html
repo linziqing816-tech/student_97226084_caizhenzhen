@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#003399">
+  <title>期中成绩查询系统</title>
+  <style>
+    /* ---------- 基础重置 ---------- */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      /* 政务蓝主色调 */
+      --primary: #003399;
+      --primary-dark: #002277;
+      --primary-light: #1a4db3;
+      --primary-soft: #e6ecf7;
+      --primary-border: #b8c7e0;
+
+      /* 语义色 */
+      --error: #c0392b;
+      --error-soft: #fceae8;
+      --warning: #b7791f;
+      --warning-soft: #fef5e7;
+      --info: #2e86c1;
+      --info-soft: #ebf3f8;
+      --success: #1e8449;
+      --success-soft: #e8f5ec;
+
+      /* 中性色 */
+      --text: #1a1a1a;
+      --text-muted: #5a5a5a;
+      --text-light: #8a8a8a;
+      --border: #d6d6d6;
+      --border-light: #e8e8e8;
+      --bg: #f5f7fa;
+      --card: #ffffff;
+
+      --radius-sm: 4px;
+      --radius-md: 10px;
+    }
+
+    html, body {
+      min-height: 100%;
+      font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB",
+        -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ---------- 政务蓝顶栏 ---------- */
+    .gov-header {
+      background: var(--primary);
+      color: #fff;
+      padding: 18px 24px;
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    .gov-header__inner {
+      max-width: 720px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .gov-header__emblem {
+      width: 26px;
+      height: 26px;
+      flex-shrink: 0;
+    }
+
+    .gov-header__title {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .gov-header__sub {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-left: auto;
+      letter-spacing: 1px;
+    }
+
+    /* ---------- 页面容器 ---------- */
+    .page {
+      min-height: calc(100vh - 64px);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: clamp(20px, 4vw, 40px) 16px;
+    }
+
+    .stack {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      box-shadow: 0 2px 8px rgba(0, 51, 153, 0.08);
+      padding: clamp(24px, 5vw, 36px);
+    }
+
+    /* ---------- 卡片标题 ---------- */
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--primary);
+      padding-bottom: 10px;
+      margin-bottom: 18px;
+      border-bottom: 2px solid var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::before {
+      content: '';
+      width: 3px;
+      height: 14px;
+      background: var(--primary);
+      border-radius: 1px;
+    }
+
+    .section-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: -10px;
+      margin-bottom: 18px;
+    }
+
+    /* ---------- 表单 ---------- */
+    .form-group {
+      margin-bottom: 22px;
+    }
+
+    .form-group:last-of-type {
+      margin-bottom: 24px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .form-label__required {
+      color: var(--error);
+      margin-left: 2px;
+    }
+
+    .form-label__hint {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text-light);
+      margin-left: 6px;
+    }
+
+    .form-input {
+      display: block;
+      width: 100%;
+      height: 38px;
+      padding: 0 12px;
+      font-size: 14px;
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .form-input::placeholder {
+      color: #b0b0b0;
+    }
+
+    .form-input:hover {
+      border-color: var(--primary-border);
+    }
+
+    .form-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-soft);
+    }
+
+    .form-input.is-invalid {
+      border-color: var(--error);
+    }
+
+    .form-input.is-invalid:focus {
+      box-shadow: 0 0 0 3px var(--error-soft);
+    }
+
+    .form-error {
+      display: none;
+      margin-top: 4px;
+      font-size: 12px;
+      line-height: 1.4;
+      color: var(--error);
+    }
+
+    .form-error.is-visible {
+      display: block;
+    }
+
+    /* ---------- 文件上传 ---------- */
+    .file-input {
+      position: relative;
+    }
+
+    .file-input__native {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .file-input__trigger {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      min-height: 38px;
+      padding: 6px 12px;
+      font-size: 13px;
+      color: var(--text-muted);
+      background: #fafbfc;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+    }
+
+    .file-input__trigger:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .file-input.is-invalid .file-input__trigger {
+      border-color: var(--error);
+      color: var(--error);
+      background: var(--error-soft);
+    }
+
+    .file-input__icon {
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+    }
+
+    .file-input__name {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-input.has-file .file-input__trigger {
+      color: var(--text);
+      border-style: solid;
+      border-color: var(--success);
+      background: var(--success-soft);
+    }
+
+    /* ---------- 按钮 ---------- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 40px;
+      padding: 0 18px;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      color: #fff;
+      background: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease, transform 0.05s ease;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: var(--primary-dark);
+      border-color: var(--primary-dark);
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    .btn:disabled {
+      background: #b8c2d4;
+      border-color: #b8c2d4;
+      color: #fff;
+      cursor: not-allowed;
+      opacity: 0.75;
+    }
+
+    .btn--block {
+      width: 100%;
+    }
+
+    .btn--secondary {
+      background: #fff;
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .btn--secondary:hover:not(:disabled) {
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      border-color: var(--primary-dark);
+    }
+
+    .btn__spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .btn--secondary .btn__spinner {
+      border-color: rgba(0, 51, 153, 0.3);
+      border-top-color: var(--primary);
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .btn-row .btn {
+      flex: 1;
+      min-width: 120px;
+    }
+
+    /* ---------- 结果分区 ---------- */
+    .result-zone {
+      display: none;
+      padding: 18px 22px 20px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+      background: #fff;
+      border-left: 4px solid var(--border);
+    }
+
+    .result-zone.is-visible {
+      display: block;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-zone__header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .result-zone__badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 44px;
+      height: 22px;
+      padding: 0 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 3px;
+      color: #fff;
+      letter-spacing: 0.3px;
+    }
+
+    .result-zone__title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .result-zone__message {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text);
+      margin-bottom: 10px;
+      word-break: break-word;
+    }
+
+    .result-zone__detail {
+      padding: 10px 12px;
+      font-size: 12px;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      line-height: 1.5;
+      color: var(--text);
+      background: #f7f8fa;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      word-break: break-all;
+      white-space: pre-wrap;
+      max-height: 240px;
+      overflow: auto;
+    }
+
+    .result-zone__detail:empty {
+      display: none;
+    }
+
+    /* 状态样式变体: 左侧色条 + 浅色徽章 */
+    .result-zone--200 {
+      border-left-color: var(--success);
+      background: var(--success-soft);
+    }
+    .result-zone--200 .result-zone__badge { background: var(--success); }
+
+    .result-zone--400 {
+      border-left-color: var(--warning);
+      background: var(--warning-soft);
+    }
+    .result-zone--400 .result-zone__badge { background: var(--warning); }
+
+    .result-zone--404 {
+      border-left-color: var(--info);
+      background: var(--info-soft);
+    }
+    .result-zone--404 .result-zone__badge { background: var(--info); }
+
+    .result-zone--500,
+    .result-zone--error {
+      border-left-color: var(--error);
+      background: var(--error-soft);
+    }
+    .result-zone--500 .result-zone__badge,
+    .result-zone--error .result-zone__badge { background: var(--error); }
+
+    /* ---------- 打印专用区块: 屏幕隐藏 ---------- */
+    .print-only {
+      display: none;
+    }
+
+    /* ---------- 打印样式 ---------- */
+    @media print {
+      @page {
+        size: A4;
+        margin: 16mm 14mm;
+      }
+
+      html, body {
+        background: #fff !important;
+        color: #000 !important;
+        font-size: 11pt;
+      }
+
+      .gov-header,
+      .no-print {
+        display: none !important;
+      }
+
+      .page {
+        padding: 0;
+        min-height: 0;
+        display: block;
+      }
+
+      .stack {
+        max-width: 100%;
+        gap: 10px;
+      }
+
+      .card {
+        box-shadow: none !important;
+        border: 1px solid #999 !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+
+      .section-title {
+        color: #000 !important;
+        border-bottom-color: #000 !important;
+      }
+
+      .section-title::before {
+        background: #000 !important;
+      }
+
+      .result-zone {
+        display: block !important;
+        border: 1px solid #999 !important;
+        border-left: 4px solid #333 !important;
+        background: #fff !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        margin-bottom: 10px;
+      }
+
+      .result-zone:not(.is-visible) {
+        display: none !important;
+      }
+
+      .print-only {
+        display: block !important;
+      }
+
+      .print-header {
+        text-align: center;
+        margin-bottom: 14pt;
+        padding-bottom: 8pt;
+        border-bottom: 2px solid #000;
+      }
+
+      .print-header__title {
+        font-size: 18pt;
+        font-weight: 700;
+        color: #000;
+        margin-bottom: 4pt;
+      }
+
+      .print-header__meta {
+        font-size: 10pt;
+        color: #333;
+      }
+
+      .print-footer {
+        margin-top: 14pt;
+        padding-top: 8pt;
+        border-top: 1px solid #999;
+        font-size: 9pt;
+        color: #555;
+        text-align: center;
+      }
+    }
+
+    /* ---------- 移动端微调 ---------- */
+    @media (max-width: 480px) {
+      .gov-header { padding: 14px 16px; }
+      .gov-header__sub { display: none; }
+      .form-input,
+      .btn { height: 38px; font-size: 13px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 政务蓝顶栏 -->
+  <header class="gov-header no-print" role="banner">
+    <div class="gov-header__inner">
+      <svg class="gov-header__emblem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 2 L4 6 V12 C4 17 7.5 21 12 22 C16.5 21 20 17 20 12 V6 Z"/>
+        <path d="M9 12 L11 14 L15 10"/>
+      </svg>
+      <span class="gov-header__title">期中成绩查询系统</span>
+      <span class="gov-header__sub">PUBLIC SERVICE</span>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="stack">
+      <section class="card" aria-labelledby="formTitle">
+        <h2 id="formTitle" class="section-title">信息填写</h2>
+        <p class="section-subtitle">请准确填写学号、邮箱,并上传本地 ZIP 文件</p>
+
+        <form id="queryForm" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="studentId">
+              学号<span class="form-label__required" aria-hidden="true">*</span>
+            </label>
+            <input
+              class="form-input"
+              type="text"
+              id="studentId"
+              name="student_id"
+              placeholder="请输入学号(例如 20230001)"
+              autocomplete="off"
+              inputmode="numeric"
+              maxlength="32"
+              aria-required="true"
+              aria-describedby="studentIdError"
+            />
+            <div class="form-error" id="studentIdError" role="alert">学号不能为空</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="email">
+              邮箱<span class="form-label__required" aria-hidden="true">*</span>
+            </label>
+            <input
+              class="form-input"
+              type="email"
+              id="email"
+              name="email"
+              placeholder="请输入邮箱(例如 user@example.com)"
+              autocomplete="email"
+              maxlength="64"
+              aria-required="true"
+              aria-describedby="emailError"
+            />
+            <div class="form-error" id="emailError" role="alert">请输入有效的邮箱地址</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="htmlFile">
+              本地 ZIP 文件<span class="form-label__required" aria-hidden="true">*</span>
+              <span class="form-label__hint">.zip</span>
+            </label>
+            <div class="file-input" id="fileInputWrapper">
+              <input
+                class="file-input__native"
+                type="file"
+                id="htmlFile"
+                name="homework_file"
+                accept=".zip,application/zip,application/x-zip-compressed"
+                aria-required="true"
+                aria-describedby="htmlFileError"
+              />
+              <label class="file-input__trigger" for="htmlFile">
+                <svg class="file-input__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <span class="file-input__name" id="fileName">点击选择本地 ZIP 文件</span>
+              </label>
+            </div>
+            <div class="form-error" id="htmlFileError" role="alert">请选择本地 ZIP 文件</div>
+          </div>
+
+          <div class="no-print">
+            <button type="submit" class="btn btn--block" id="submitBtn" disabled>
+              <span class="btn__text">查询成绩</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- 200: 查询成功(含打印按钮) -->
+      <section class="result-zone result-zone--200" id="result200" role="region" aria-live="polite" aria-label="查询成功">
+        <!-- 打印专用页眉: 屏幕隐藏, 打印时显示 -->
+        <div class="print-only print-header">
+          <h1 class="print-header__title">期中成绩查询结果</h1>
+          <p class="print-header__meta" id="printTime">打印时间: -</p>
+        </div>
+
+        <div class="result-zone__header">
+          <span class="result-zone__badge">200</span>
+          <span class="result-zone__title">查询成功</span>
+        </div>
+        <p class="result-zone__message" id="msg200"></p>
+        <pre class="result-zone__detail" id="detail200"></pre>
+
+        <div class="btn-row no-print">
+          <button type="button" class="btn btn--secondary" id="printBtn" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 6 2 18 2 18 9"/>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+              <rect x="6" y="14" width="12" height="8"/>
+            </svg>
+            <span class="btn__text">打印 / 导出 PDF</span>
+          </button>
+        </div>
+
+        <!-- 打印专用页脚 -->
+        <div class="print-only print-footer">
+          本结果由系统自动生成,仅作参考
+        </div>
+      </section>
+
+      <!-- 400: 缺少必要参数 -->
+      <section class="result-zone result-zone--400" id="result400" role="region" aria-live="polite" aria-label="缺少必要参数">
+        <div class="result-zone__header">
+          <span class="result-zone__badge">400</span>
+          <span class="result-zone__title">缺少必要参数</span>
+        </div>
+        <p class="result-zone__message" id="msg400"></p>
+        <pre class="result-zone__detail" id="detail400"></pre>
+      </section>
+
+      <!-- 404: 账号不匹配 -->
+      <section class="result-zone result-zone--404" id="result404" role="region" aria-live="polite" aria-label="账号不匹配">
+        <div class="result-zone__header">
+          <span class="result-zone__badge">404</span>
+          <span class="result-zone__title">账号不匹配</span>
+        </div>
+        <p class="result-zone__message" id="msg404"></p>
+        <pre class="result-zone__detail" id="detail404"></pre>
+      </section>
+
+      <!-- 500: 服务报错 -->
+      <section class="result-zone result-zone--500" id="result500" role="region" aria-live="assertive" aria-label="服务报错">
+        <div class="result-zone__header">
+          <span class="result-zone__badge">500</span>
+          <span class="result-zone__title">服务报错</span>
+        </div>
+        <p class="result-zone__message" id="msg500"></p>
+        <pre class="result-zone__detail" id="detail500"></pre>
+      </section>
+
+      <!-- ERR: 网络/解析异常 -->
+      <section class="result-zone result-zone--error" id="resultError" role="region" aria-live="assertive" aria-label="请求异常">
+        <div class="result-zone__header">
+          <span class="result-zone__badge">ERR</span>
+          <span class="result-zone__title">请求异常</span>
+        </div>
+        <p class="result-zone__message" id="msgError"></p>
+        <pre class="result-zone__detail" id="detailError"></pre>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var API_URL = 'http://133.186.146.224:8000/GetYourMidtermScore';
+
+      // ---------- DOM 引用 ----------
+      var form           = document.getElementById('queryForm');
+      var studentIdInput = document.getElementById('studentId');
+      var emailInput     = document.getElementById('email');
+      var fileInput      = document.getElementById('htmlFile');
+      var fileInputWrap  = document.getElementById('fileInputWrapper');
+      var fileNameEl     = document.getElementById('fileName');
+      var submitBtn      = document.getElementById('submitBtn');
+      var submitBtnText  = submitBtn.querySelector('.btn__text');
+      var printBtn       = document.getElementById('printBtn');
+      var printBtnText   = printBtn.querySelector('.btn__text');
+      var printTimeEl    = document.getElementById('printTime');
+
+      var studentIdError = document.getElementById('studentIdError');
+      var emailError     = document.getElementById('emailError');
+      var htmlFileError  = document.getElementById('htmlFileError');
+
+      var zones = {
+        200:   document.getElementById('result200'),
+        400:   document.getElementById('result400'),
+        404:   document.getElementById('result404'),
+        500:   document.getElementById('result500'),
+        error: document.getElementById('resultError')
+      };
+      var zoneMsgs = {
+        200:   document.getElementById('msg200'),
+        400:   document.getElementById('msg400'),
+        404:   document.getElementById('msg404'),
+        500:   document.getElementById('msg500'),
+        error: document.getElementById('msgError')
+      };
+      var zoneDetails = {
+        200:   document.getElementById('detail200'),
+        400:   document.getElementById('detail400'),
+        404:   document.getElementById('detail404'),
+        500:   document.getElementById('detail500'),
+        error: document.getElementById('detailError')
+      };
+
+      // ---------- 正则 ----------
+      var EMAIL_REGEX = /^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/;
+      var ZIP_EXT_REGEX = /\.zip$/i;
+
+      // ---------- 状态机 ----------
+      var state = {
+        isLoading: false,
+        lastResult: null,
+        isPrinting: false
+      };
+
+      // ---------- 工具函数 ----------
+      function setError(input, errorEl, message) {
+        input.classList.add('is-invalid');
+        if (message) errorEl.textContent = message;
+        errorEl.classList.add('is-visible');
+      }
+
+      function clearError(input, errorEl) {
+        input.classList.remove('is-invalid');
+        errorEl.classList.remove('is-visible');
+      }
+
+      function hideAllZones() {
+        Object.keys(zones).forEach(function (key) {
+          zones[key].classList.remove('is-visible');
+        });
+      }
+
+      function showZone(status, message, detail) {
+        hideAllZones();
+        var zone     = zones[status];
+        var msgEl    = zoneMsgs[status];
+        var detailEl = zoneDetails[status];
+        if (!zone) return;
+        zone.classList.add('is-visible');
+        if (msgEl) msgEl.textContent = message || '';
+        if (detailEl) detailEl.textContent = detail || '';
+        zone.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      function formatNow() {
+        var d = new Date();
+        var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+        return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+               ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+      }
+
+      function tryFormatJson(text) {
+        if (!text) return '';
+        try {
+          return JSON.stringify(JSON.parse(text), null, 2);
+        } catch (e) {
+          return text;
+        }
+      }
+
+      function trimOnBlur(el) {
+        if (!el) return;
+        var trimmed = el.value.trim();
+        if (trimmed !== el.value) {
+          el.value = trimmed;
+        }
+      }
+
+      // ---------- 校验 ----------
+      function isStudentIdValid() {
+        return studentIdInput.value.trim().length > 0;
+      }
+
+      function isEmailFormatValid() {
+        var v = emailInput.value.trim();
+        return v.length > 0 && EMAIL_REGEX.test(v);
+      }
+
+      function isFileFormatValid() {
+        var file = fileInput.files ? fileInput.files[0] : null;
+        return !!file && ZIP_EXT_REGEX.test(file.name);
+      }
+
+      function isFormValid() {
+        return isStudentIdValid() && isEmailFormatValid() && isFileFormatValid();
+      }
+
+      function validateStudentId() {
+        var value = studentIdInput.value.trim();
+        if (!value) {
+          setError(studentIdInput, studentIdError, '学号不能为空');
+          return false;
+        }
+        clearError(studentIdInput, studentIdError);
+        return true;
+      }
+
+      function validateEmail() {
+        var value = emailInput.value.trim();
+        if (!value) {
+          setError(emailInput, emailError, '邮箱不能为空');
+          return false;
+        }
+        if (!EMAIL_REGEX.test(value)) {
+          setError(emailInput, emailError, '邮箱格式不正确,请检查');
+          return false;
+        }
+        clearError(emailInput, emailError);
+        return true;
+      }
+
+      function validateFile() {
+        var file = fileInput.files ? fileInput.files[0] : null;
+        if (!file) {
+          fileInputWrap.classList.add('is-invalid');
+          htmlFileError.textContent = '请选择本地 ZIP 文件';
+          htmlFileError.classList.add('is-visible');
+          return false;
+        }
+        if (!ZIP_EXT_REGEX.test(file.name)) {
+          fileInputWrap.classList.add('is-invalid');
+          htmlFileError.textContent = '仅支持 .zip 文件';
+          htmlFileError.classList.add('is-visible');
+          return false;
+        }
+        fileInputWrap.classList.remove('is-invalid');
+        htmlFileError.classList.remove('is-visible');
+        return true;
+      }
+
+      // ---------- 按钮状态机 ----------
+      function updateButtons() {
+        submitBtn.disabled = state.isLoading || !isFormValid();
+        printBtn.disabled = state.lastResult !== '200' || state.isPrinting;
+        form.setAttribute('aria-busy', state.isLoading ? 'true' : 'false');
+      }
+
+      function setLoading(isLoading) {
+        state.isLoading = isLoading;
+        if (isLoading) {
+          submitBtnText.textContent = '查询中...';
+          if (!submitBtn.querySelector('.btn__spinner')) {
+            var s = document.createElement('span');
+            s.className = 'btn__spinner';
+            submitBtn.insertBefore(s, submitBtnText);
+          }
+        } else {
+          submitBtnText.textContent = '查询成绩';
+          var existing = submitBtn.querySelector('.btn__spinner');
+          if (existing) existing.remove();
+        }
+        updateButtons();
+      }
+
+      function setPrintLoading(isLoading) {
+        if (isLoading) {
+          printBtnText.textContent = '正在准备打印...';
+          if (!printBtn.querySelector('.btn__spinner')) {
+            var s = document.createElement('span');
+            s.className = 'btn__spinner';
+            printBtn.insertBefore(s, printBtnText);
+          }
+        } else {
+          printBtnText.textContent = '打印 / 导出 PDF';
+          var existing = printBtn.querySelector('.btn__spinner');
+          if (existing) existing.remove();
+        }
+      }
+
+      // ---------- 事件绑定 ----------
+      studentIdInput.addEventListener('blur', function () {
+        trimOnBlur(studentIdInput);
+        validateStudentId();
+        updateButtons();
+      });
+      emailInput.addEventListener('blur', function () {
+        trimOnBlur(emailInput);
+        validateEmail();
+        updateButtons();
+      });
+
+      studentIdInput.addEventListener('input', function () {
+        if (studentIdInput.classList.contains('is-invalid')) {
+          clearError(studentIdInput, studentIdError);
+        }
+        updateButtons();
+      });
+      emailInput.addEventListener('input', function () {
+        if (emailInput.classList.contains('is-invalid')) {
+          clearError(emailInput, emailError);
+        }
+        updateButtons();
+      });
+
+      fileInput.addEventListener('change', function () {
+        var file = fileInput.files ? fileInput.files[0] : null;
+        if (file) {
+          fileNameEl.textContent = file.name;
+          fileInputWrap.classList.add('has-file');
+          if (fileInputWrap.classList.contains('is-invalid')) {
+            fileInputWrap.classList.remove('is-invalid');
+            htmlFileError.classList.remove('is-visible');
+          }
+        } else {
+          fileNameEl.textContent = '点击选择本地 ZIP 文件';
+          fileInputWrap.classList.remove('has-file');
+        }
+        updateButtons();
+      });
+
+      printBtn.addEventListener('click', function () {
+        if (printBtn.disabled || state.isPrinting) return;
+        state.isPrinting = true;
+        if (printTimeEl) printTimeEl.textContent = '打印时间: ' + formatNow();
+        setPrintLoading(true);
+        try {
+          window.print();
+        } finally {
+          setTimeout(function () {
+            setPrintLoading(false);
+            state.isPrinting = false;
+          }, 300);
+        }
+      });
+
+      window.addEventListener('afterprint', function () {
+        setPrintLoading(false);
+        state.isPrinting = false;
+      });
+
+      // ---------- 提交 ----------
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        hideAllZones();
+
+        var isStudentIdValid = validateStudentId();
+        var isEmailValid     = validateEmail();
+        var isFileValid      = validateFile();
+
+        if (!isStudentIdValid || !isEmailValid || !isFileValid) {
+          if (!isStudentIdValid) {
+            studentIdInput.focus();
+          } else if (!isEmailValid) {
+            emailInput.focus();
+          } else {
+            fileInput.click();
+          }
+          return;
+        }
+
+        var formData = new FormData();
+        formData.append('student_id', studentIdInput.value.trim());
+        formData.append('email', emailInput.value.trim());
+        formData.append('homework_file', fileInput.files[0], fileInput.files[0].name || 'homework.zip');
+
+        state.lastResult = null;
+        setLoading(true);
+
+        fetch(API_URL, {
+          method: 'POST',
+          body: formData
+        })
+          .then(function (response) {
+            return response.text().then(function (text) {
+              return { status: response.status, text: text };
+            });
+          })
+          .then(function (result) {
+            var status  = result.status;
+            var detail  = tryFormatJson(result.text);
+            var message;
+
+            if (status === 200) {
+              message = '查询成功, 以下为返回数据';
+              state.lastResult = '200';
+              showZone(200, message, detail);
+            } else if (status === 400) {
+              message = '请求缺少必要参数, 请检查表单是否填写完整';
+              state.lastResult = '400';
+              showZone(400, message, detail);
+            } else if (status === 404) {
+              message = '学号与邮箱不匹配, 请核对后重试';
+              state.lastResult = '404';
+              showZone(404, message, detail);
+            } else if (status === 500) {
+              message = '服务器内部错误, 请稍后重试';
+              state.lastResult = '500';
+              showZone(500, message, detail);
+            } else {
+              message = '未预期的响应状态: ' + status;
+              state.lastResult = 'error';
+              showZone('error', message, detail);
+            }
+          })
+          .catch(function (err) {
+            var reason = (err && err.message) ? err.message : String(err);
+            state.lastResult = 'error';
+            showZone('error',
+              '网络请求失败: ' + reason,
+              '可能原因: 跨域限制(CORS)、网络不通,或服务不可用。\n服务地址: ' + API_URL
+            );
+          })
+          .finally(function () {
+            setLoading(false);
+          });
+      });
+
+      // ---------- 初始化 ----------
+      updateButtons();
+    })();
+  </script>
+</body>
+</html>
